@@ -1,0 +1,23 @@
+
+game
+  new deck
+  shuffle
+  dealer_hand
+  player_hand
+  player_plays
+    hit/stay
+      hit
+        draw
+      stay
+  dealer_plays
+    hit if <16
+    stay if >=16
+  decide
+
+
+
+
+  blackjack -> win   #score==21
+  bust -> lose       #score>21
+  >=other -> win
+  <other  -> lose
