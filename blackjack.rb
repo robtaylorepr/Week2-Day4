@@ -58,20 +58,43 @@ class Game
     (my_score > their_score) && !bust(their_score) && !bust(my_score)
   end
 
-  def declare_winner
+  def six(hand)
+    (hand.length >= 6) && (score(hand) < 21)
+  end
+
+  def player_wins
     pl = score(player_hand)
     d  = score(dealer_hand)
-    if !bust(pl) && (blackjack(pl) || bust(d) || beat(pl,d))
+    six(player_hand) ||
+    (!bust(pl) &&
+    (blackjack(pl) || bust(d) || beat(pl,d)))
+  end
+
+  def dealer_wins
+    pl = score(player_hand)
+    d  = score(dealer_hand)
+    !bust(d) &&
+    (blackjack(d) || bust(pl) || beat(d,pl))
+  end
+
+  def declare_winner
+    if player_wins
       puts "Player Wins"
-    elsif !bust(d) && (blackjack(d) || bust(pl) || beat(d,pl))
+    elsif dealer_wins
       puts "Dealer Wins"
     else
-      puts "Player Wins # Ties go to the player"
+      if player_hand.length > dealer_hand.length
+        puts "Player Wins by more cards"
+      elsif dealer_hand.length > player_hand.length
+        puts "Dealer Wins by more cards"
+      else
+        puts "Player Wins by Tie"
+      end
     end
     show_both_scores
   end
 
-  def prepare_decks
+  def prepare_deck
     self.deck = Deck.new
     self.deck.shuffle
   end
@@ -83,17 +106,30 @@ class Game
 
   def main_sequence
     show("Dealer",false,dealer_hand)
-    player_plays
-    dealer_plays if score(player_hand) < 21
+    unless dealer_wins
+      player_plays
+      dealer_plays if score(player_hand) < 21 && score(dealer_hand) < 16
+    end
     show("Dealer",true,dealer_hand)
     show("Player",true,player_hand)
     declare_winner
   end
 
+  def rematch
+    prompt = TTY::Prompt.new
+    s = "Would you like a rematch (y/n)?"
+    if prompt.ask(s)=='y'
+      Game.new.play
+    else
+      puts "Thanks for playing"
+    end
+  end
+
   def play
-    prepare_decks
+    prepare_deck
     prepare_hands
     main_sequence
+    rematch
   end
 
   def show(who,show_first,hand)
@@ -113,10 +149,4 @@ class Game
   end
 end
 
-begin
-  prompt = TTY::Prompt.new
-  game = Game.new
-  game.play
-  s = "Would you like a rematch (y/n)?"
-end until prompt.ask(s)=='n'
-puts "Thanks for playing"
+Game.new.play
