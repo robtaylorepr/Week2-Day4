@@ -5,9 +5,12 @@ require 'pry'
 
 class Game
   attr_accessor   :player_hand, :dealer_hand,
-                  :winner, :debug, :deck
+                  :winner, :debug, :deck,
+                  :wins, :losses, :ties
   def initialize
-    self.winner          = nil
+    self.wins            = 0
+    self.losses          = 0
+    self.ties            = 0
     self.player_hand     = []
     self.dealer_hand     = []
     self.deck            = []
@@ -77,18 +80,35 @@ class Game
     (blackjack(d) || bust(pl) || beat(d,pl))
   end
 
+  def win
+    self.wins += 1
+  end
+
+  def lose
+    self.losses += 1
+  end
+
+  def tie
+    self.ties += 1
+  end
+
   def declare_winner
     if player_wins
       puts "Player Wins"
+      win
     elsif dealer_wins
       puts "Dealer Wins"
+      lose
     else
       if player_hand.length > dealer_hand.length
         puts "Player Wins by more cards"
+        win
       elsif dealer_hand.length > player_hand.length
         puts "Dealer Wins by more cards"
+        win
       else
         puts "Player Wins by Tie"
+        win
       end
     end
     show_both_scores
@@ -106,7 +126,7 @@ class Game
 
   def main_sequence
     show("Dealer",false,dealer_hand)
-    unless dealer_wins
+    unless blackjack(dealer_hand)
       player_plays
       dealer_plays if score(player_hand) < 21 && score(dealer_hand) < 16
     end
@@ -115,13 +135,24 @@ class Game
     declare_winner
   end
 
+  def show_cumulative
+    puts "cumulative winds:  #{wins}"
+    puts "cumulative losses: #{losses}"
+    puts "cumulative tiesL   #{ties}"
+  end
+
+  def goodby
+    puts "Thanks for playing"
+    show_cumulative
+  end
+
   def rematch
     prompt = TTY::Prompt.new
     s = "Would you like a rematch (y/n)?"
     if prompt.ask(s)=='y'
-      Game.new.play
+      play
     else
-      puts "Thanks for playing"
+      goodby
     end
   end
 
