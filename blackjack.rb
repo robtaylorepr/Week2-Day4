@@ -66,11 +66,10 @@ class Game
   end
 
   def player_wins
-    pl = score(player_hand)
-    d  = score(dealer_hand)
-    six(player_hand) ||
-    (!bust(pl) &&
-    (blackjack(pl) || bust(d) || beat(pl,d)))
+    ps = score(player_hand) #player score
+    ds = score(dealer_hand) #dealer score
+    !bust(ps) &&
+    (blackjack(ps) || bust(ds) || beat(ps,ds))
   end
 
   def dealer_wins
@@ -93,25 +92,36 @@ class Game
   end
 
   def declare_winner
-    if player_wins
+    winner = ''
+    if six(player_hand)
+      puts "Player wins by rule of six"
+      win
+      winner = "Player"
+    elsif player_wins && !dealer_wins
       puts "Player Wins"
       win
+      winner = "Player"
     elsif dealer_wins
       puts "Dealer Wins"
       lose
+      winner = "Dealer"
     else
       if player_hand.length > dealer_hand.length
         puts "Player Wins by more cards"
         win
+        winner = "Player"
       elsif dealer_hand.length > player_hand.length
         puts "Dealer Wins by more cards"
-        win
+        lose
+        winner = "Dealer"
       else
         puts "Player Wins by Tie"
         win
+        winner = "Player"
       end
     end
     show_both_scores
+    winner
   end
 
   def prepare_deck
@@ -125,9 +135,9 @@ class Game
   end
 
   def main_sequence
-    show("Dealer",false,dealer_hand)
-    unless blackjack(dealer_hand)
-      player_plays
+    if !blackjack(score(dealer_hand))
+      show("Dealer",false,dealer_hand)
+      player_plays if score(player_hand) < 21
       dealer_plays if score(player_hand) < 21 && score(dealer_hand) < 16
     end
     show("Dealer",true,dealer_hand)
@@ -136,9 +146,9 @@ class Game
   end
 
   def show_cumulative
-    puts "cumulative winds:  #{wins}"
+    puts "cumulative wins:   #{wins}"
     puts "cumulative losses: #{losses}"
-    puts "cumulative tiesL   #{ties}"
+    puts "cumulative ties    #{ties}"
   end
 
   def goodby
@@ -168,7 +178,9 @@ class Game
     puts "#{who}"
     hand.each{|card|
       if show_first || card_number > 1 || debug
-        puts "   #{card.value} of #{card.suit}"
+        puts "   #{card.face} of #{card.suit}"
+      else
+        puts "   face-down-card"
       end
       card_number += 1
     }
@@ -180,4 +192,4 @@ class Game
   end
 end
 
-Game.new.play
+# Game.new.play

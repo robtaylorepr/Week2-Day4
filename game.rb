@@ -41,7 +41,7 @@ class Game
       if score(dealer_hand) >= 21 then break end
     end
   end
-
+  
   def declare_winner
     puts "I always win"
   end
