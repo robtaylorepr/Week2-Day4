@@ -1,11 +1,22 @@
-
-
 class Card
-  attr_accessor :face, :suit, :value, :ace
-  def initialize(face='A',suit='S')
-    @face   = face
-    @suit   = suit
-    @@ace   = 11
+  attr_accessor :face, :suit, :value
+
+  @ace_value = 11
+
+  def initialize(face = 'A', suit = 'S', value)
+
+    @face = face
+    @suit = suit
+    @value = value
+
+  end
+
+  def self.ace_value
+    @ace_value
+  end
+
+  def self.ace_value=(val)
+    @ace_value = val
   end
 
   def self.faces
@@ -16,31 +27,20 @@ class Card
     %w(C S D H)
   end
 
-  def self.ace
-    @@ace
-  end
-
-  def self.new_ace(new_value)
-    @@ace = new_value
-  end
-
-  def value
-    result = Card.faces.index(face) + 2
-    if result > 10 then result = 10 end
-    if face=='A' then result = Card.ace end
-    result
-  end
-
-  def < (other)
+  def <(other)
     self.value < other.value
   end
 
-  def > (other)
+  def >(other)
     self.value > other.value
   end
 
-  def == (my,other)
+  def ==(my, other)
     self.value == other.value
+  end
+
+  def +(other)
+    self.value + other.value
   end
 
 end

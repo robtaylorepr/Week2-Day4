@@ -1,34 +1,36 @@
 require_relative 'card'
 require 'pry'
 
-class Deck
+class Deck < Array
   attr_accessor :deck
+
   def initialize
     makedeck
   end
 
   def makedeck
-    suits  = Card.suits
-    faces  = Card.faces
+
     self.deck = []
-    faces.each {|face|
-      suits.each {|suit|
-        card = Card.new
-        card.suit  = suit
-        card.face  = face
+
+    Card.faces.each do |face|
+      Card.suits.each do |suit|
+
+        value = [Card.faces.index(face) + 2, 10].min
+        value = Card.ace_value if face == 'A'
+
+        card = Card.new(face, suit, value)
         deck << card
-      }
-    deck
-    }
 
-    def shuffle
-      deck.shuffle!
+      end
+      deck
     end
 
-    def empty?
-      deck.length == 0
-    end
+    self.deck.shuffle!
 
+  end
+
+  def empty?
+    self.length == 0
   end
 
   def draw

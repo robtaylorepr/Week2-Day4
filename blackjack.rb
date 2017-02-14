@@ -21,7 +21,7 @@ class Game
     hand = []
     hand << deck.draw
     hand << deck.draw
-    hand
+    return hand
   end
 
   def player_plays
@@ -35,10 +35,10 @@ class Game
   end
 
   def dealer_plays
-    show("Dealer",false,dealer_hand)
+    show("Dealer", false, dealer_hand)
     until score(dealer_hand) >= 16
       dealer_hand << deck.draw
-      show("Dealer",false,dealer_hand)
+      show("Dealer", false, dealer_hand)
       if score(dealer_hand) >= 21 then break end
     end
   end
@@ -46,7 +46,7 @@ class Game
   def show_both_scores
     d = score(dealer_hand)
     p = score(player_hand)
-    puts ("Player:#{p} Dealer:#{d}")
+    puts ("Player: #{p}, Dealer: #{d}")
   end
 
   def blackjack(score)
@@ -54,10 +54,21 @@ class Game
   end
 
   def bust(score)
+    redefine_ace if score > 21
     score > 21
   end
 
-  def beat(my_score,their_score)
+  def redefine_ace
+    player_hand.collect do |card|
+      if card.face == 'A' then
+        n = TTY::Prompt.new.select('Specify a value for Ace:', %w{11 1})
+        card.value = n.to_i
+        puts "Ace redefined to #{n}."
+      end
+    end
+  end
+
+  def beat(my_score, their_score)
     (my_score > their_score) && !bust(their_score) && !bust(my_score)
   end
 
@@ -69,14 +80,14 @@ class Game
     ps = score(player_hand) #player score
     ds = score(dealer_hand) #dealer score
     !bust(ps) &&
-    (blackjack(ps) || bust(ds) || beat(ps,ds))
+    (blackjack(ps) || bust(ds) || beat(ps, ds))
   end
 
   def dealer_wins
     pl = score(player_hand)
     d  = score(dealer_hand)
     !bust(d) &&
-    (blackjack(d) || bust(pl) || beat(d,pl))
+    (blackjack(d) || bust(pl) || beat(d, pl))
   end
 
   def win
@@ -136,22 +147,22 @@ class Game
 
   def main_sequence
     if !blackjack(score(dealer_hand))
-      show("Dealer",false,dealer_hand)
+      show("Dealer", false, dealer_hand)
       player_plays if score(player_hand) < 21
       dealer_plays if score(player_hand) < 21 && score(dealer_hand) < 16
     end
-    show("Dealer",true,dealer_hand)
-    show("Player",true,player_hand)
+    show("Dealer", true, dealer_hand)
+    show("Player", true, player_hand)
     declare_winner
   end
 
   def show_cumulative
-    puts "cumulative wins:   #{wins}"
-    puts "cumulative losses: #{losses}"
-    puts "cumulative ties    #{ties}"
+    puts "Cumulative wins:   #{wins}"
+    puts "Cumulative losses: #{losses}"
+    puts "Cumulative ties:   #{ties}"
   end
 
-  def goodby
+  def goodbye
     puts "Thanks for playing"
     show_cumulative
   end
@@ -159,10 +170,10 @@ class Game
   def rematch
     prompt = TTY::Prompt.new
     s = "Would you like a rematch (y/n)?"
-    if prompt.ask(s)=='y'
+    if prompt.yes?(s) { |q| q.default true }
       play
     else
-      goodby
+      goodbye
     end
   end
 
@@ -173,10 +184,10 @@ class Game
     rematch
   end
 
-  def show(who,show_first,hand)
+  def show(who, show_first, hand)
     card_number = 1
     puts "#{who}"
-    hand.each{|card|
+    hand.each { |card|
       if show_first || card_number > 1 || debug
         puts "   #{card.face} of #{card.suit}"
       else
@@ -188,8 +199,12 @@ class Game
   end
 
   def score(hand)
-    hand.reduce(0){|sum,card| sum += card.value}
+    hand.reduce(0) { |sum, card |
+      begin
+        sum += card.value
+      rescue
+        # binding.pry
+      end }
   end
-end
 
-# Game.new.play
+end
